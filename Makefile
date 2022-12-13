@@ -9,7 +9,7 @@ all	:	$(NAME) $(NISO)
 $(NAME)	:	$(OBJS)
 		ld -m elf_i386 -T $(LDSCRPT) -o $(NAME) $(OBJS)
 
-$(NISO)	:
+$(NISO)	:	$(NAME)
 		mkdir -p isodir/boot/grub
 		cp $(NAME) isodir/boot/$(NAME)
 		cp grub.cfg isodir/boot/grub/grub.cfg
