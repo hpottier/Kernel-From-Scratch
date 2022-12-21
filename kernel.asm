@@ -22,11 +22,12 @@ VGA_COLOR_WHITE equ 15
  
 global kernel_main
 kernel_main:
-    mov dh, VGA_COLOR_LIGHT_GREY
+    mov dh, VGA_COLOR_CYAN
     mov dl, VGA_COLOR_BLACK
     call terminal_set_color
     mov esi, hello_string
     call terminal_write_string
+
     jmp $
  
  
@@ -57,7 +58,6 @@ terminal_set_color:
     or dl, dh
     mov [terminal_color], dl
  
- 
     ret
  
 ; IN = dl: y, dh: x, al: ASCII char
@@ -71,16 +71,18 @@ terminal_putentryat:
     mov byte [0xB8000 + ebx], al
     mov byte [0xB8001 + ebx], dl
  
- 
     popa
     ret
  
 ; IN = al: ASCII char
 terminal_putchar:
     mov dx, [terminal_cursor_pos] ; This loads terminal_column at DH, and terminal_row at DL
- 
+
+    cmp al, 0xA
+    je .new_line
+    
     call terminal_putentryat
- 
+
     inc dh
     cmp dh, VGA_WIDTH
     jne .cursor_moved
@@ -93,12 +95,17 @@ terminal_putchar:
  
     mov dl, 0
  
- 
 .cursor_moved:
     ; Store new cursor position 
     mov [terminal_cursor_pos], dx
  
     ret
+
+.new_line:
+    xor dh, dh
+    inc dl
+    jmp .cursor_moved
+
  
 ; IN = cx: length of string, ESI: string location
 ; OUT = none
@@ -157,9 +164,20 @@ terminal_write_string:
 ; - Terminal scrolling when screen is full
 ; Note: 
 ; - The string is looped through twice on printing. 
+
+test1 db "42", 0
  
-hello_string db "42", 0 ; 0xA = line feed
- 
+hello_string db "42", 0xA \
+              , "42", 0xA \
+              , "42", 0xA, 0
+
+line1 db "       :::      ::::::::", 0xA \
+       , "      :+:      :+:   :+:", 0xA \
+       , "    +:+ +:+       +:+", 0xA \
+       , "  +#+  +:+      +#+", 0xA \
+       , "+#+#+#+#+#+   +#+", 0xA \
+       , "     #+#    #+#", 0xA \
+       , "    ###   ########", 0
  
 terminal_color db 0
  
