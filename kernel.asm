@@ -30,6 +30,16 @@ kernel_main:
 
     jmp $
  
+; IN = dl: bg color, dh: fg color
+; OUT = none
+terminal_set_color:
+    shl dl, 4
+ 
+    or dl, dh
+    mov [terminal_color], dl
+ 
+    ret
+ 
 ; IN = dl: y, dh: x
 ; OUT = dx: Index with offset 0xB8000 at VGA buffer
 ; Other registers preserved
@@ -46,16 +56,6 @@ terminal_getidx:
     shl dx, 1 ; multiply by two because every entry is a word that takes up 2 bytes
 
     pop ax
-    ret
- 
-; IN = dl: bg color, dh: fg color
-; OUT = none
-terminal_set_color:
-    shl dl, 4
- 
-    or dl, dh
-    mov [terminal_color], dl
- 
     ret
  
 ; IN = dl: y, dh: x, al: ASCII char
