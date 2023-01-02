@@ -23,6 +23,8 @@ VGA_COLOR_WHITE equ 15
 
 global kfs_main
 kfs_main:
+	call disable_cursor
+
     mov dh, VGA_COLOR_GREEN
     mov dl, VGA_COLOR_BLACK
     call terminal_set_color
@@ -31,6 +33,26 @@ kfs_main:
     call terminal_write_string
 
     jmp $
+
+
+; IN = none
+; OUT = none
+disable_cursor:
+    pushf
+    push eax
+    push edx
+    mov dx, 0x3D4
+    mov al, 0xA
+    out dx, al
+
+    inc dx
+    mov al, 0x20
+    out dx, al
+
+    pop edx
+    pop eax
+    popf
+    ret
 
 
 ; IN = dl: bg color, dh: fg color
