@@ -36,16 +36,15 @@ kernel_main:
 terminal_getidx:
     push ax; preserve registers
  
-    shl dh, 1 ; multiply by two because every entry is a word that takes up 2 bytes
- 
     mov al, VGA_WIDTH
     mul dl
     mov dl, al
  
-    shl dl, 1 ; same
     add dl, dh
     mov dh, 0
- 
+
+    shl dx, 1 ; multiply by two because every entry is a word that takes up 2 bytes
+
     pop ax
     ret
  
@@ -133,27 +132,23 @@ terminal_write_string:
     call terminal_write
     popa
     ret
- 
-; Exercises:
-; - Newline support
-; - Terminal scrolling when screen is full
-; Note: 
-; - The string is looped through twice on printing. 
 
 test1 db "42", 0
  
 hello_string db "42", 0xA \
               , "42", 0xA \
+              , "42", 0xA \
+              , "42", 0xA \
               , "42", 0xA, 0
 
-line1 db "       :::      ::::::::", 0xA \
-       , "      :+:      :+:   :+:", 0xA \
-       , "    +:+ +:+       +:+", 0xA \
-       , "  +#+  +:+      +#+", 0xA \
-       , "+#+#+#+#+#+   +#+", 0xA \
-       , "     #+#    #+#", 0xA \
-       , "    ###   ########", 0
- 
+string42 db "        :::      ::::::::", 0xA \
+          , "      :+:      :+:    :+:", 0xA \
+          , "    +:+ +:+         +:+", 0xA \
+          , "  +#+  +:+       +#+", 0xA \
+          , "+#+#+#+#+#+   +#+", 0xA \
+          , "     #+#    #+#", 0xA \
+          , "    ###   ########.fr", 0x0
+
 terminal_color db 0
  
 terminal_cursor_pos:
