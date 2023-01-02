@@ -126,7 +126,7 @@ terminal_putchar:
 	ret
 
 
-; IN = CX: length of string, ESI: string location
+; IN = ESI: string location
 ; OUT = none
 terminal_write:
 	pusha
