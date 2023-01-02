@@ -17,12 +17,12 @@ resb 16384
 stack_top:
  
 section .text
-global _start:function (_start.end - _start)
-_start:
+global _start_kfs:function (_start_kfs.end - _start_kfs)
+_start_kfs:
 	mov esp, stack_top
  
-	extern kernel_main
-	call kernel_main
+	extern kfs_main
+	call kfs_main
  
 	cli
 .hang:	hlt
