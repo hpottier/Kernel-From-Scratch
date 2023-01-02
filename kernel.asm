@@ -88,6 +88,7 @@ terminal_putchar:
     jne .cursor_moved
  
     mov dh, 0
+.terminal_putchar_cont:
     inc dl
  
     cmp dl, VGA_HEIGHT
@@ -103,8 +104,7 @@ terminal_putchar:
 
 .new_line:
     xor dh, dh
-    inc dl
-    jmp .cursor_moved
+    jmp .terminal_putchar_cont
 
  
 ; IN = cx: length of string, ESI: string location
