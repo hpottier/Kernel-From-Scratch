@@ -21,55 +21,54 @@ VGA_COLOR_LIGHT_BROWN equ 14
 VGA_COLOR_WHITE equ 15
 
 
-global kfs_main
+	global kfs_main
 kfs_main:
 	call disable_cursor
 
-    mov dh, VGA_COLOR_GREEN
-    mov dl, VGA_COLOR_BLACK
-    call terminal_set_color
+	mov dh, VGA_COLOR_GREEN
+	mov dl, VGA_COLOR_BLACK
+	call terminal_set_color
 
-    mov esi, string42
-    call terminal_write_string
+	mov esi, string42
+	call terminal_write_string
 
-    jmp $
+	jmp $
 
 
 ; IN = none
 ; OUT = none
 disable_cursor:
-    pushf
-    push eax
-    push edx
-    mov dx, 0x3D4
-    mov al, 0xA
-    out dx, al
+	pushf
+	push eax
+	push edx
+	mov dx, 0x3D4
+	mov al, 0xA
+	out dx, al
 
-    inc dx
-    mov al, 0x20
-    out dx, al
+	inc dx
+	mov al, 0x20
+	out dx, al
 
-    pop edx
-    pop eax
-    popf
-    ret
+	pop edx
+	pop eax
+	popf
+	ret
 
 
-; IN = dl: bg color, dh: fg color
+; IN = DL: bg color, DH: fg color
 ; OUT = none
 terminal_set_color:
-    shl dl, 4
-    or dl, dh
-    mov [terminal_color], dl
+	shl dl, 4
+	or dl, dh
+	mov [terminal_color], dl
 
-    ret
+	ret
 
 
-; IN = dl: y, dh: x
-; OUT = dx: Index with offset 0xB8000 at VGA buffer
-; Other registers preserved
+; IN = DL: y, DH: x
+; OUT = DX: Index with offset 0xB8000 at VGA buffer
 terminal_getidx:
-    push ax
+	push ax
 	xor ebx, ebx
 	mov bl, dh
 	mov dh, 0
@@ -79,89 +78,90 @@ terminal_getidx:
 	mov edx, eax
 
 	add edx, ebx
-	shl edx, 1 ; multiply by two because every entry is a word that takes up 2 bytes
+	shl edx, 1 ; Multiply by two because every entry is a word that takes up 2 bytes
 
-    pop ax
-    ret
+	pop ax
+	ret
 
 
-; IN = dl: y, dh: x, al: ASCII char
+; IN = DL: y, DH: x, AL: ASCII char
 ; OUT = none
 terminal_putentryat:
-    pusha
-    call terminal_getidx
+	pusha
+	call terminal_getidx
 
-    mov ah, [terminal_color]
-    mov word [0xB8000 + edx], ax
+	mov ah, [terminal_color]
+	mov word [0xB8000 + edx], ax
 
-    popa
-    ret
+	popa
+	ret
 
 
-; IN = al: ASCII char
+; IN = AL: ASCII char
+; OUT = none
 terminal_putchar:
-    mov dx, [terminal_cursor_pos] ; This loads terminal_column at DH, and terminal_row at DL
+	mov dx, [terminal_cursor_pos] ; This loads terminal_column at DH, and terminal_row at DL
 
-    cmp al, 0xA
-    je .new_line
+	cmp al, 0xA
+	je .new_line
 
-    call terminal_putentryat
+	call terminal_putentryat
 
-    inc dh
-    cmp dh, VGA_WIDTH
-    jne .cursor_moved
+	inc dh
+	cmp dh, VGA_WIDTH
+	jne .cursor_moved
 
 .new_line:
 	xor dh, dh
-    inc dl
+	inc dl
 
-    cmp dl, VGA_HEIGHT
-    jne .cursor_moved
+	cmp dl, VGA_HEIGHT
+	jne .cursor_moved
 
 	xor dl, dl
 
 .cursor_moved:
-    mov [terminal_cursor_pos], dx ; Store new cursor position
+	mov [terminal_cursor_pos], dx ; Store new cursor position
 
-    ret
+	ret
 
 
-; IN = cx: length of string, ESI: string location
+; IN = CX: length of string, ESI: string location
 ; OUT = none
 terminal_write:
-    pusha
+	pusha
 
 .loopy:
-    mov al, [esi]
-    cmp al, 0
-    je .done
+	mov al, [esi]
+	cmp al, 0
+	je .done
 
-    call terminal_putchar
+	call terminal_putchar
 
-    inc esi
-    jmp .loopy
+	inc esi
+	jmp .loopy
 
 .done:
-    popa
-    ret
+	popa
+	ret
 
 
 ; IN = ESI: string location
 ; OUT = none
 terminal_write_string:
-    pusha
-    call terminal_write
-    popa
-    ret
+	pusha
+	call terminal_write
+	popa
+	ret
 
 
 string42 db "                                   :::      ::::::::", 0xA \
-          , "                                 :+:      :+:    :+:", 0xA \
-          , "                               +:+ +:+         +:+", 0xA \
-          , "                             +#+  +:+       +#+", 0xA \
-          , "                           +#+#+#+#+#+   +#+", 0xA \
-          , "                                #+#    #+#", 0xA \
-          , "                               ###   ########.fr", 0x0
+	, "                                 :+:      :+:    :+:", 0xA \
+    , "                               +:+ +:+         +:+", 0xA \
+    , "                             +#+  +:+       +#+", 0xA \
+    , "                           +#+#+#+#+#+   +#+", 0xA \
+    , "                                #+#    #+#", 0xA \
+    , "                               ###   ########.fr", 0x0
 
 terminal_color db 0
 
