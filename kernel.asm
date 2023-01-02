@@ -23,13 +23,12 @@ VGA_COLOR_WHITE equ 15
 global kernel_main
 kernel_main:
     mov dh, VGA_COLOR_CYAN
-    mov dl, VGA_COLOR_BLACK
+    mov dl, VGA_COLOR_RED
     call terminal_set_color
     mov esi, hello_string
     call terminal_write_string
 
     jmp $
- 
  
 ; IN = dl: y, dh: x
 ; OUT = dx: Index with offset 0xB8000 at VGA buffer
@@ -114,12 +113,11 @@ terminal_write:
 .loopy:
  
     mov al, [esi]
-    call terminal_putchar
- 
-    dec cx
-    cmp cx, 0
+    cmp al, 0
     je .done
- 
+
+    call terminal_putchar
+
     inc esi
     jmp .loopy
  
@@ -128,33 +126,10 @@ terminal_write:
     popa
     ret
  
-; IN = ESI: zero delimited string location
-; OUT = ECX: length of string
-terminal_strlen:
-    push eax
-    push esi
-    mov ecx, 0
-.loopy:
-    mov al, [esi]
-    cmp al, 0
-    je .done
- 
-    inc esi
-    inc ecx
- 
-    jmp .loopy
- 
- 
-.done:
-    pop esi
-    pop eax
-    ret
- 
 ; IN = ESI: string location
 ; OUT = none
 terminal_write_string:
     pusha
-    call terminal_strlen
     call terminal_write
     popa
     ret
